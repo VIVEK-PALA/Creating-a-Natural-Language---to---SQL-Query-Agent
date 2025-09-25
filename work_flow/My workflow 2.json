@@ -1,0 +1,201 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! Your SQL buddy here 👋 How can I assist?",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -672,
+        -432
+      ],
+      "id": "d8d2033c-89d3-4c82-a963-87740437248e",
+      "name": "When chat message received",
+      "webhookId": "e68dc037-49df-4b91-af33-353d3ddb2203"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an AI SQL Agent connected to a PostgreSQL database.\n\nCore Responsibilities\n\nNatural Language → SQL\n\nTranslate the user’s plain English questions into optimized PostgreSQL SQL queries.\n\nYou are aware of the exact schema and tables available (see schema section below).\n\nAlways generate SQL using only these available tables/columns. Do not invent new tables or columns.\n\nExecution & Results\n\nRun the SQL query against the database.\n\nReturn the results as a formatted table in the chat (rows and columns).\n\nIf the result set is large, return only the first 20 rows and mention that more rows exist.\n\nDate Column Handling\n\nIf a query requires extracting a year from a column named date (or similar), first check the data type:\n\nIf the column is DATE or TIMESTAMP, use:\n\nEXTRACT(YEAR FROM date_column)\n\n\nIf the column is TEXT in YYYY-MM-DD format, use:\n\nSUBSTRING(date_column, 1, 4)::INT\n\n\nApply the appropriate method automatically to avoid errors.\n\nClarification When Needed\n\nIf the user’s request is ambiguous or incomplete, ask clarifying questions before executing SQL.\n\nHandling Missing Data\n\nIf the requested data cannot be found or derived from available tables, state:\n“There is no available data to answer the particular question, but I can help with the following details.”\n\nSuggest alternative queries based on available schema.\n\nBest Practices\n\nWrite SQL that is valid in PostgreSQL.\n\nUse schema.table_name when referencing tables (e.g., public.fact_sales_monthly).\n\nFormat SQL with indentation and uppercase keywords.\n\nAvoid unsafe or destructive commands (DROP, DELETE, etc.) unless explicitly requested.\n\n📑 Available Schema (public)\n\ndim_customer\n\ncustomer_code\n\ncustomer\n\nplatform\n\nchannel\n\nmarket\n\nsub_zone\n\nregion\n\ndim_product\n\nproduct_code\n\ndivision\n\nsegment\n\ncategory\n\nproduct\n\nvariant\n\nfact_sales_monthly\n\ndate (TEXT, format YYYY-MM-DD)\n\nproduct_code\n\ncustomer_code\n\nsold_quantity\n\nfact_gross_price\n\nproduct_code\n\nfiscal_year\n\ngross_price\n\nfact_forecast_monthly\n\ndate\n\nfiscal_year\n\nproduct_code\n\ncustomer_code\n\nforecast_quantity\n\nfact_freight_cost\n\nmarket\n\nfiscal_year\n\nfreight_pct\n\nother_cost_pct\n\nfact_manufacturing_cost\n\nproduct_code\n\ncost_year\n\nmanufacturing_cost\n\nfact_post_invoice_deductions\n\ncustomer_code\n\nproduct_code\n\ndate\n\ndiscounts_pct\n\nother_deductions_pct\n\nfact_pre_invoice_deductions\n\ncustomer_code\n\nfiscal_year\n\npre_invoice_discount_pct"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -368,
+        -400
+      ],
+      "id": "e506d74d-a411-4c25-ac2d-65e52379ae1b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -240
+      ],
+      "id": "a24673f1-5221-4725-8ce0-afebc25f5652",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "c8SkGs56Tq8R7n7I",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -320,
+        -224
+      ],
+      "id": "c49c48f9-6ebb-4278-a783-4b908c2d8556",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Execute a SQL query in Postgres",
+        "operation": "executeQuery",
+        "query": "SELECT table_name,\n       column_name,\n       data_type,\n       character_maximum_length,\n       is_nullable,\n       column_default\nFROM information_schema.columns\nWHERE table_schema = 'public'\nORDER BY table_name, ordinal_position;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -192,
+        -224
+      ],
+      "id": "5357186d-9e8c-4fd5-8ac8-6cec5b337235",
+      "name": "Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "6OjI59vIz6bFSTgR",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "nxXsr7CcprNLsyFG",
+          "mode": "list",
+          "cachedResultName": "sql  executor"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sql_querry": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('sql_querry', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "sql_querry"
+          ],
+          "schema": [
+            {
+              "id": "sql_querry",
+              "displayName": "sql_querry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        -240
+      ],
+      "id": "0e6ccb98-bd7a-4014-a58f-52733b4f59c3",
+      "name": "executor"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "executor": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bff2ed47-1671-425b-bb95-8fabf39bbb4e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "07b996f04d9f1de73664f1b1cec250d9d14ca993742cc7e6d77f3eb85e44fc22"
+  },
+  "id": "X23FIghrb7pgfTgr",
+  "tags": []
+}
